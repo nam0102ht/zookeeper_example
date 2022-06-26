@@ -1,0 +1,63 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "com.avast.gradle.docker-compose" version "0.14.13"
+}
+
+group 'com.ntnn'
+version '1.0-SNAPSHOT'
+apply plugin : 'java'
+
+application {
+    mainClass = "com.ntnn.Application"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper
+    implementation 'org.apache.zookeeper:zookeeper:3.8.0'
+
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+}
+sourceSets {
+    main {
+        java {
+            srcDir('src/main/java')
+        }
+        resources {
+            srcDir('src/main/resources')
+        }
+    }
+    test {
+        java {
+            srcDir('src/test/java')
+        }
+        resources {
+            srcDir('src/test/resources')
+        }
+    }
+}
+
+dockerCompose {
+    useComposeFiles = ["src/main/docker/docker-compose.yml"]
+    dockerComposeStopTimeout = java.time.Duration.ofSeconds(120)
+}
+
+task startTestEnvironment() {
+    dependsOn += ["composeUp"]
+}
+
+task stopTestEnvironment {
+    dependsOn += ["composeDown"]
+}
+
+test {
+    useJUnitPlatform()
+}
